@@ -48,7 +48,7 @@ pipeline {
 
 def notify(status) {
 	emailext (
-		to: 'devops.kphb@gmail.com',
+		to: 'srujansamalla0007@gmail.com',
 		subject: "${status} - ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
 		body: "$status ${env.BUILD_NUMBER} - Jenkins job ${env.BUILD_URL}"
 	)
