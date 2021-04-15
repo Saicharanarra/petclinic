@@ -28,9 +28,9 @@ pipeline {
 						classifier: '', 
 						file: "target/petclinic.war", 
 						type: 'war']], 
-						credentialsId: 'nexusCred', 
+						credentialsId: 'nexuscred', 
 						groupId: 'org.springframework.samples', 
-						nexusUrl: '3.135.191.241:8081/nexus', 
+						nexusUrl: '3.133.130.210:8081/nexus', 
 						nexusVersion: 'nexus2', 
 						protocol: 'http', 
 						repository: 'releases', 
@@ -53,9 +53,9 @@ pipeline {
 				withCredentials([string(credentialsId: 'ansi_vault_pass', variable: 'MYPASS')]) {
 					sh '''
 						echo $MYPASS
-						echo $MYPASS > .vault_pass.txt
+						echo $MYPASS > .vault_pass
 						cd ansible
-						sudo ansible-playbook -i production -e "BUILD_NO=${BUILD_NUMBER}" --vault-id .vault_pass.txt site.yml 
+						sudo ansible-playbook -i production -e "BUILD_NO=${BUILD_NUMBER}" --vault-id .vault_pass site.yml 
 					'''
 				}
 			}
