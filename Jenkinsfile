@@ -48,7 +48,7 @@ pipeline {
 				// git 'https://github.com/akmaharshi/tomcat-standalone.git'
 				checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, 
                                           extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ansible']], submoduleCfg: [], 
-        				userRemoteConfigs: [[url: 'https://github.com/akmaharshi/tomcat-standalone.git']]])
+        				userRemoteConfigs: [[url: 'https://github.com/Saicharanarra/tomcat-standalone.git']]])
 				
 				withCredentials([string(credentialsId: 'ansi_vault_pass', variable: 'MYPASS')]) {
 					sh '''
