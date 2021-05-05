@@ -1,75 +1,42 @@
-pipeline {
+pipeline{
 	agent any
-	tools {
+	tools{
 		maven 'M3.6'
-	}
-	stages {
+		}
+	stages{
 		stage('Build') {
-			steps {
-    			sh "mvn clean package"
-    		}
-		}
-		stage('Post Build Actions') {
-			parallel {
-				stage('Test Result') {
-					steps {
-						junit "target/surefire-reports/*.xml"
-					}
-				}
-				stage('Archive Artifact') {
-					steps {
-					    archiveArtifacts artifacts: "target/*.?ar", followSymlinks: false
-					}
-				}
-				stage('Nexus upload') {
-					steps {
-						nexusArtifactUploader artifacts: [
-						[artifactId: 'spring-petclinic', 
-						classifier: '', 
-						file: "target/petclinic.war", 
-						type: 'war']], 
-						credentialsId: 'nexusCred', 
-						groupId: 'org.springframework.samples', 
-						nexusUrl: '3.135.191.241:8081/nexus', 
-						nexusVersion: 'nexus2', 
-						protocol: 'http', 
-						repository: 'releases', 
-						version: "4.2.${BUILD_NUMBER}"
-					}
-				}
+			steps{
+				sh 'mvn clean package'
 			}
 		}
-		stage('Deploy') {
-			input {
-                		message "Should we continue?"
-                		ok "Yes, we should."
-            		}
-			steps {
-				// git 'https://github.com/Saicharanarra/tomcat-standalone.git'
-				checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, 
-                                          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ansible']], submoduleCfg: [], 
-        				userRemoteConfigs: [[url: 'https://github.com/akmaharshi/tomcat-standalone.git']]])
-				
-				withCredentials([string(credentialsId: 'ansi_vault_pass', variable: 'MYPASS')]) {
-					sh '''
-						echo $MYPASS
-						echo $MYPASS > .vault_pass.txt
-						cd ansible
-						sudo ansible-playbook -i production -e "BUILD_NO=${BUILD_NUMBER}" --vault-id .vault_pass.txt site.yml 
-					'''
-				}
+		stage('Archive') {	
+			steps{
+				archiveArtifacts artifacts: 'target/*.?ar', followSymlinks: false
+			}
+		}
+		stage('Unit Tests') {
+			steps{
+				junit 'target/surefire-reports/*.xml'
+			}
+		}
+		stage('Nexus Uploader'){
+			steps{
+				nexusArtifactUploader artifacts: [[artifactId: 'spring-petclinic', classifier: '', file: 'target/petclinic.war', type: 'war']], credentialsId: 'nexuscred', groupId: 'org.springframework.samples', nexusUrl: '3.15.6.189:8081/nexus', nexusVersion: 'nexus2', protocol: 'http', repository: 'releases', version: '4.2.6'
 			}
 		}
 	}
-	post {
-		success {
-			echo "Success"
-		}
-		failure {
-			echo "Failed"
-		}
+	post{
+		success
+			{
+				notify('success')
+			}
+		failure
+			{
+				notify('failed')
+			}
 	}
 }
+
 def notify(status){
 	emailext body: "$status-Jenkins job", 
 		subject: '$status', 
