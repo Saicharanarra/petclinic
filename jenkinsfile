@@ -28,9 +28,9 @@ pipeline {
 						classifier: '', 
 						file: "target/petclinic.war", 
 						type: 'war']], 
-						credentialsId: 'nexuscred', 
+						credentialsId: 'nexusCred', 
 						groupId: 'org.springframework.samples', 
-						nexusUrl: '3.143.235.220:8081/nexus', 
+						nexusUrl: '18.222.110.235:8081/nexus', 
 						nexusVersion: 'nexus2', 
 						protocol: 'http', 
 						repository: 'releases', 
@@ -45,16 +45,16 @@ pipeline {
                 		ok "Yes, we should."
             		}
 			steps {
-				// git 'https://github.com/Saicharanarra/tomcat-standalone.git'
+				// git 'https://github.com/akmaharshi/tomcat-standalone.git'
 				checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, 
                                           extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ansible']], submoduleCfg: [], 
-        				userRemoteConfigs: [[url: 'https://github.com/Saicharanarra/tomcat-standalone.git']]])
-				
+        				userRemoteConfigs: [[url: 'https://github.com/akmaharshi/tomcat-standalone.git']]])
 				
 				withCredentials([string(credentialsId: 'ansi_vault_pass', variable: 'MYPASS')]) {
 					sh '''
 						echo $MYPASS
 						echo $MYPASS > ~/.vault_pass.txt
+						export ANSIBLE_VAULT_PASSWORD_FILE=~/.vault_pass.txt
 						cd ansible
 						sudo ansible-playbook -i production -e "BUILD_NO=${BUILD_NUMBER}" --vault-id ~/.vault_pass.txt site.yml 
 					'''
@@ -70,9 +70,4 @@ pipeline {
 			echo "Failed"
 		}
 	}
-}
-def notify(status){
-	emailext body: "$status-Jenkins job", 
-		subject: '$status', 
-		to: 'srujansamalla0007@gmail.com'
 }
